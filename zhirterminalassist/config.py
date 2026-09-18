@@ -21,6 +21,7 @@ DEFAULT_CONFIG: Dict[str, Any] = {
     "temperature": 0.7,
     "max_tokens": 2048,
     "auto_execute_safe": False,
+    "language": "ru",
 }
 
 PROVIDER_DEFAULTS = {
@@ -129,6 +130,9 @@ class AppConfig:
             value = str(value).lower() in ("1", "true", "yes")
 
         self.data[norm_key] = value
+        if norm_key == "language":
+            from zhirterminalassist.i18n import set_language
+            set_language(str(value))
         self.save()
 
 def mask_api_key(key: str) -> str:

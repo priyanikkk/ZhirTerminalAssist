@@ -1,5 +1,4 @@
 import os
-import readline
 import sys
 from typing import List, Optional
 from rich.console import Console
@@ -8,7 +7,7 @@ from rich.panel import Panel
 from rich.table import Table
 
 from zhirterminalassist import __version__
-from zhirterminalassist.ai import get_ai_client
+from zhirterminalassist.agent import AgentSession
 from zhirterminalassist.completion import get_completion_script
 from zhirterminalassist.config import get_config, mask_api_key, setup_logging
 from zhirterminalassist.diagnostics import DiagnosticsRunner
@@ -17,35 +16,9 @@ from zhirterminalassist.history import get_history_manager
 from zhirterminalassist.logs import LogAnalyzer
 from zhirterminalassist.security import SecurityChecker
 from zhirterminalassist.system import get_system_info
+from zhirterminalassist.terminal import TerminalUI
 
 console = Console()
-
-def print_banner(info):
-    banner_text = (
-        "[bold cyan]⚡ ZhirTerminalAssist[/bold cyan]\n"
-        "[dim]AI Linux Terminal Assistant[/dim]"
-    )
-    console.print(Panel(banner_text, border_style="cyan", width=62))
-
-    gpu_short = info.gpus[0] if info.gpus else "Generic"
-    if len(gpu_short) > 34:
-        gpu_short = gpu_short[:31] + "..."
-
-    cpu_short = info.cpu_model
-    if len(cpu_short) > 34:
-        cpu_short = cpu_short[:31] + "..."
-
-    tree_text = (
-        f"  [bold]System[/bold]\n"
-        f"  ├─ [cyan]OS[/cyan]      {info.os_pretty_name}\n"
-        f"  ├─ [cyan]Kernel[/cyan]  {info.kernel}\n"
-        f"  ├─ [cyan]CPU[/cyan]     {cpu_short}\n"
-        f"  ├─ [cyan]GPU[/cyan]     {gpu_short}\n"
-        f"  ├─ [cyan]RAM[/cyan]     {info.ram_total_gb} GB\n"
-        f"  └─ [cyan]Shell[/cyan]   {info.shell}"
-    )
-    console.print(tree_text)
-    console.print("\n[dim]Type your question, or 'exit' / Ctrl+C to quit.[/dim]\n")
 
 def cmd_system():
     info = get_system_info(refresh_cpu=True)
@@ -99,15 +72,9 @@ def cmd_diagnose(category: str = "all", ask_ai: bool = False):
 
     if ask_ai:
         report = DiagnosticsRunner.format_report_markdown(results)
-        console.print("[cyan]🤖 Analyzing diagnostics with AI...[/cyan]\n")
-        client = get_ai_client()
-        resp = client.query(f"Analyze these diagnostic results and propose actions:\n\n{report}")
-        if resp.is_success:
-            console.print(Panel(Markdown(resp.content), title="AI Diagnostic Analysis", border_style="cyan"))
-            if resp.commands:
-                CommandExecutor.execute_list(resp.commands)
-        else:
-            console.print(f"[red]{resp.error_message}[/red]\n{resp.error_details}")
+        console.print("[cyan]🤖 Handing off diagnostics to AI Agent...[/cyan]\n")
+        session = AgentSession(os.getcwd())
+        session.run_turn(f"Analyze these system diagnostic results and help fix any issues:\n\n{report}")
 
 def cmd_explain(command_str: str):
     info = SecurityChecker.explain_command_local(command_str)
@@ -122,14 +89,6 @@ def cmd_explain(command_str: str):
     risk_style = "green" if "Low" in info["risk"] else ("yellow" if "Medium" in info["risk"] else "red")
     console.print("[bold cyan]RISK[/bold cyan]")
     console.print(f"  [{risk_style}]{info['risk']}[/{risk_style}]\n")
-
-    # Ask AI for extended context if key exists
-    config = get_config()
-    if config.get("api_key") or config.get("provider") == "local":
-        client = get_ai_client()
-        resp = client.query(f"Explain this Linux command in detail: `{command_str}`")
-        if resp.is_success:
-            console.print(Panel(Markdown(resp.content), title="Detailed AI Explanation", border_style="blue"))
 
 def cmd_logs(path: Optional[str] = None):
     if path:
@@ -158,19 +117,12 @@ def cmd_analyze(input_text: Optional[str] = None):
         console.print("[red]No input provided to analyze.[/red]")
         return
 
-    console.print("\n[cyan]🔍 Analyzing log stream with AI...[/cyan]\n")
-    client = get_ai_client()
-    prompt = (
+    console.print("\n[cyan]🔍 Analyzing with AI Agent...[/cyan]\n")
+    session = AgentSession(os.getcwd())
+    session.run_turn(
         "Analyze this Linux log snippet. Identify root causes, group any errors, "
-        f"explain what happened in plain language, and suggest fixing commands:\n\n```text\n{input_text[:6000]}\n```"
+        f"and execute commands if needed to diagnose or fix:\n\n```text\n{input_text[:6000]}\n```"
     )
-    resp = client.query(prompt)
-    if resp.is_success:
-        console.print(Panel(Markdown(resp.content), title="AI Log Root Cause Analysis", border_style="green"))
-        if resp.commands:
-            CommandExecutor.execute_list(resp.commands)
-    else:
-        console.print(f"[red]{resp.error_message}[/red]\n{resp.error_details}")
 
 def cmd_history(search: str = ""):
     hist = get_history_manager()
@@ -204,12 +156,14 @@ def cmd_config(args: List[str]):
         table.add_column("Setting", width=20)
         table.add_column("Value")
 
-        table.add_row("provider", config.get("provider"))
-        table.add_row("model", config.get("model"))
-        table.add_row("base_url", config.get("base_url"))
-        table.add_row("api_key", mask_api_key(config.get("api_key", "")))
+        table.add_row("provider", str(config.get("provider")))
+        table.add_row("model", str(config.get("model")))
+        table.add_row("base_url", str(config.get("base_url")))
+        table.add_row("api_key", mask_api_key(str(config.get("api_key", ""))))
         table.add_row("temperature", str(config.get("temperature")))
         table.add_row("max_tokens", str(config.get("max_tokens")))
+        table.add_row("auto_execute_safe", str(config.get("auto_execute_safe")))
+        table.add_row("language", str(config.get("language")))
         console.print(table)
         console.print("\n[dim]To change a setting: zhirta config set <key> <value>[/dim]\n")
         return
@@ -228,70 +182,26 @@ def cmd_config(args: List[str]):
     else:
         console.print("[yellow]Usage: zhirta config [set <key> <value> | get <key>][/yellow]")
 
-def cmd_interactive():
-    info = get_system_info(refresh_cpu=False)
-    print_banner(info)
-    client = get_ai_client()
-    hist_mgr = get_history_manager()
-    conversation_history = []
-
-    while True:
-        try:
-            query = input("\n[zhir] > ").strip()
-        except (KeyboardInterrupt, EOFError):
-            console.print("\n[yellow]Goodbye![/yellow]")
-            break
-
-        if not query:
-            continue
-        if query.lower() in ("exit", "quit", "q"):
-            console.print("[dim]Exiting...[/dim]")
-            break
-        if query.lower() == "clear":
-            os.system("clear")
-            print_banner(info)
-            continue
-        if query.lower() == "system":
-            cmd_system()
-            continue
-        if query.lower() == "diagnose":
-            cmd_diagnose()
-            continue
-
-        console.print("  [dim cyan]🔍 Анализирую запрос и состояние системы...[/dim cyan]\n")
-        resp = client.query(query, history=conversation_history)
-        if resp.is_success:
-            conversation_history.append({"role": "user", "content": query})
-            conversation_history.append({"role": "assistant", "content": resp.content})
-            hist_mgr.add_interaction(query, resp.content, resp.commands)
-
-            console.print(Panel(Markdown(resp.content), title="AI Assistant", border_style="cyan"))
-            if resp.commands:
-                CommandExecutor.execute_list(resp.commands)
-        else:
-            console.print(Panel(
-                f"[bold red]{resp.error_message}[/bold red]\n\n{resp.error_details}",
-                title="AI Error",
-                border_style="red"
-            ))
-
 def print_help():
     help_text = f"""
 [bold cyan]ZhirTerminalAssist[/bold cyan] v{__version__}
-[dim]Intelligent AI Linux Terminal Assistant and Diagnostics[/dim]
+[dim]Autonomous AI Linux Terminal & Coding Agent[/dim]
 
 [bold]USAGE:[/bold]
-  zhirta                            Start interactive REPL terminal session
-  zhirta "<question or query>"      Ask a one-shot question to the AI assistant
+  zhirta                            Start interactive AI agent terminal session (REPL)
+  zhirta "<request / prompt>"       Run AI agent on a specific task or query
   zhirta system                     Show system telemetry, hardware & resource usage
-  zhirta diagnose [category]        Run system diagnostics (audio, network, gpu, etc.)
+  zhirta diagnose [category] [--ai] Run system diagnostics (audio, network, gpu, etc.)
   zhirta explain "<command>"        Break down a Linux command, its flags, and risks
   zhirta logs [file.log]            View systemd journal error logs or custom file
-  zhirta analyze                    Analyze stdin pipe with AI (e.g. dmesg | zhirta analyze)
+  zhirta analyze                    Analyze stdin pipe with AI Agent (e.g. dmesg | zhirta analyze)
   zhirta history                    Show execution history table
-  zhirta config [set key val]       View or update settings (model, api-key, base-url)
+  zhirta config [set key val]       View or update settings (model, api_key, base_url, language)
   zhirta completion [shell]         Generate shell completion script (bash, zsh, fish)
   zhirta version                    Show version information
+
+[bold]INTERACTIVE SLASH COMMANDS:[/bold]
+  /help, /clear, /status, /model, /config, /history, /commands, /files, /diff, /reset, /language, /exit
 """
     console.print(help_text)
 
@@ -306,7 +216,9 @@ def main():
             return
 
     if not args:
-        cmd_interactive()
+        session = AgentSession(os.getcwd())
+        ui = TerminalUI(session)
+        ui.run()
         return
 
     cmd = args[0].lower()
@@ -364,25 +276,11 @@ def main():
         print(get_completion_script(shell))
         return
 
-    # Fallback: treat all arguments as a direct natural language question
+    # Fallback: Treat arguments as one-shot prompt to the AI Agent
     query = " ".join(args)
-    client = get_ai_client()
-    hist_mgr = get_history_manager()
-    console.print(f"\n[bold cyan]Query:[/bold cyan] {query}")
-    console.print("  [dim]Analyzing system state and contacting AI...[/dim]\n")
-
-    resp = client.query(query)
-    if resp.is_success:
-        hist_mgr.add_interaction(query, resp.content, resp.commands)
-        console.print(Panel(Markdown(resp.content), title="AI Assistant", border_style="cyan"))
-        if resp.commands:
-            CommandExecutor.execute_list(resp.commands)
-    else:
-        console.print(Panel(
-            f"[bold red]{resp.error_message}[/bold red]\n\n{resp.error_details}",
-            title="AI Error",
-            border_style="red"
-        ))
+    console.print(f"\n[bold cyan]● Task:[/bold cyan] [bold white]{query}[/bold white]\n")
+    session = AgentSession(os.getcwd())
+    session.run_turn(query)
 
 if __name__ == "__main__":
     main()

@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "zhirterminalassist"
-version = "1.0.0"
-description = "AI-powered Linux Terminal Assistant and Diagnostics"
+version = "1.1.0"
+description = "Autonomous AI Terminal and Coding Agent for Linux"
 readme = "README.md"
 authors = [{ name = "priyanikkk" }]
 license = { text = "MIT" }
@@ -15,6 +15,7 @@ dependencies = [
     "httpx>=0.25.0",
     "python-dotenv>=1.0.0",
     "rich>=13.0.0",
+    "prompt_toolkit>=3.0.36",
     "pygments>=2.16.0"
 ]
 

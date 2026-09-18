@@ -1,4 +1,4 @@
-"""ZhirTerminalAssist - AI Linux Terminal Assistant."""
+"""ZhirTerminalAssist - Autonomous AI Linux Terminal & Coding Agent."""
 
-__version__ = "1.0.0"
+__version__ = "1.1.0"
 __author__ = "priyanikkk"

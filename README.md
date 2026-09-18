@@ -3,60 +3,89 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![Python: 3.11+](https://img.shields.io/badge/python-3.11+-3776AB.svg?logo=python&logoColor=white)](https://www.python.org/)
 [![Platform: Linux](https://img.shields.io/badge/platform-Linux-FCC624.svg?logo=linux&logoColor=black)](https://kernel.org)
-[![Pure CLI/TUI](https://img.shields.io/badge/Interface-Pure%20Terminal%20CLI%2FTUI-black.svg?logo=gnometerminal&logoColor=white)](https://github.com/priyanikkk/ZhirTerminalAssist)
+[![Pure CLI/TUI](https://img.shields.io/badge/Interface-Autonomous%20AI%20Terminal%20Agent-00d7ff.svg?logo=gnometerminal&logoColor=white)](https://github.com/priyanikkk/ZhirTerminalAssist)
 [![Arch / CachyOS](https://img.shields.io/badge/Optimized-Arch%20%2F%20CachyOS-1793D1.svg?logo=arch-linux&logoColor=white)](https://archlinux.org/)
-[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
-> **ZhirTerminalAssist** (`zhirta`) is an intelligent AI-powered Linux terminal assistant and troubleshooting tool running **directly inside your native shell**. Zero GUI, zero browser dependencies, pure terminal efficiency.
+> **ZhirTerminalAssist** (`zhirta`) is an autonomous **AI Linux Terminal & Coding Agent** operating directly inside your command line — inspired by Claude Code.
+> It doesn't just chat: it actively inspects files, edits code with diff previews, executes bash commands with security guardrails, runs tests, manages Git commits, and diagnoses Linux system issues.
 
 ```text
-╭────────────────────────────────────────────────────────────╮
-│ ⚡ ZhirTerminalAssist                                      │
-│ AI Linux Terminal Assistant                                │
-╰────────────────────────────────────────────────────────────╯
-  System
-  ├─ OS      CachyOS
-  ├─ Kernel  7.1.8-1-cachyos
-  ├─ CPU     AMD Ryzen 3 4300G with Radeon Graphics
-  ├─ GPU     AMD Radeon Vega Graphics
-  ├─ RAM     30.7 GB
-  └─ Shell   bash
+╭──────────────────────────────────────────────╮
+│ ZhirTerminalAssist                           │
+│ AI Terminal Agent                            │
+╰──────────────────────────────────────────────╯
 
-zhir > почему у меня нет звука?
+  Model: google/gemini-2.5-flash
+  Directory: /home/user/myproject
+  Language: ru (Русский)
+
+  Type /help for available commands
+
+zhir ❯ почини упавшие тесты и сделай коммит
+● Inspecting project...
+● Running command...
+$ pytest
+✗ Error (code 1)
+● Reading tests/test_calc.py...
+✓ Read tests/test_calc.py
+● Editing tests/test_calc.py...
+--- a/tests/test_calc.py
++++ b/tests/test_calc.py
+@@ -5,3 +5,3 @@
+-    assert add(2, 2) == 5
++    assert add(2, 2) == 4
+Применить изменения? [Y/n]: y
+✓ Updated tests/test_calc.py
+● Running command...
+$ pytest
+✓ Done
+● Git Commit Proposal
+Message: "fix: correct assertion in test_calc"
+Создать коммит с этим сообщением? [Y/n]: y
+✓ Коммит успешно создан: [main 7f2e1a4] fix: correct assertion in test_calc
+✓ Done
 ```
 
 ---
 
 ## 🌟 Key Features
 
-- 🖥️ **Pure Terminal Native**:
-  - Runs in any Linux terminal (Alacritty, Kitty, Foot, Konsole, GNOME Terminal, tty).
-  - No GUI windows, no Qt/Tkinter/Electron overhead.
-  - Interactive REPL session (`zhir > `) with prompt history, banner, and clean exit handling (`Ctrl+C`, `Ctrl+D`, `exit`).
-- 🤖 **Multi-Provider AI Intelligence**:
-  - Connects to **OpenRouter**, **OpenAI-compatible APIs**, and **Local Endpoints** (Ollama, LM Studio, vLLM).
-  - Senior Linux Sysadmin system prompt: grounds recommendations in actual system context, diagnoses issues before proposing fixes, respects distribution package managers, and never fabricates outputs.
-- 🛡️ **Built-in Security Engine**:
-  - Strict command risk classification:
-    - `SAFE`: Read-only queries (`uname`, `lspci`, `journalctl`, `systemctl status`).
-    - `DANGEROUS` / `CONFIRM`: Warns before running modifying commands (`rm`, `dd`, `mkfs`, `fdisk`, `chmod -R`, `chown -R`, `pacman -R`, `curl ... | sh`).
-    - `BLOCKED`: Hard-prevents catastrophic commands (`rm -rf /`, `rm -rf ~`, fork bombs, raw drive wiping).
-  - Confirmation prompt `Execute? [y/N]` before any suggested command runs.
-- 🔍 **Subsystem Diagnostics**:
-  - Built-in health checks across **Audio** (PipeWire/WirePlumber/ALSA), **Network**, **GPU** (Mesa/Vulkan), **Storage**, **Systemd** (failed units), **Packages** (pacman lock), **Display** (Wayland/X11), and **Gaming** (Steam, Wine, GameMode).
-  - Run specific categories: `zhirta diagnose audio`, `zhirta diagnose gpu`, etc.
-  - Pass diagnostic results to AI: `zhirta diagnose --ai`.
-- 💡 **Deep Command Explainer**:
-  - `zhirta explain "sudo pacman -Syu"` breaks down the binary, individual flags, permissions, and security risks.
-- 📜 **Unix Pipeline & Log Analyzer**:
-  - Supports UNIX pipes: `dmesg | zhirta analyze`, `journalctl -p 3 -xb | zhirta analyze`, `cat error.log | zhirta analyze`.
-  - Instant inspection of journalctl error logs with `zhirta logs`.
-- 📊 **Real-Time Telemetry**:
-  - `zhirta system` displays live CPU load %, RAM/Swap, storage usage, active shell, desktop environment, and uptime.
-- 🕒 **Persistent Local History**:
-  - Auditable SQLite database in `~/.local/share/zhirterminalassist/history.db`.
-- ⌨️ **Tab Completion**:
-  - Built-in completion generator for **Bash**, **Zsh**, and **Fish**.
+- 🤖 **Autonomous Multi-Step Agent Loop**:
+  - Automatically breaks tasks down into investigative and remedial steps: inspects directories, reads files, modifies code, runs commands, analyzes outputs, and iterates until the goal is achieved.
+  - Native function calling + fallback tool parser compatible with OpenRouter, OpenAI, and local Ollama models.
+- ⚡ **Modern Terminal UX (`prompt_toolkit`)**:
+  - Styled `zhir ❯ ` prompt.
+  - Persistent input history across sessions with arrow navigation (↑/↓) and auto-suggestions.
+  - **Bilingual & Layout-Friendly**: Seamless support for both Russian 🇷🇺 and English 🇬🇧 keyboards without artifacts or broken navigation.
+- 📝 **Safe File Editing & Visual Diffs**:
+  - View files with line numbers.
+  - Interactive unified diff previews before modifications are written.
+  - Protection against accidental path traversal outside the project directory (`os.getcwd()`).
+- 🛡️ **Comprehensive Security Guardrails**:
+  - `BLOCKED`: Hard-prevents catastrophic commands (`rm -rf /`, `rm -rf ~`, fork bombs, raw drive wiping).
+  - `DANGEROUS`: Highlights destructive commands (`rm`, `mkfs`, `dd`, `chmod -R`, `pacman -R`, `curl ... | sh`) with red warning panels and requires confirmation.
+  - `CONFIRM`: Warns before package installations, service restarts, or system changes.
+  - `SAFE`: Fast read-only inspection commands (`ls`, `cat`, `git status`, `uptime`, etc.).
+- 🐙 **Integrated Git Workflow**:
+  - Inspect repository status (`git_status`), uncommitted unified diffs (`git_diff`), and create structured commits (`git_commit`) with user confirmation.
+- 🎛️ **Slash Commands**:
+  - `/help`: Interactive commands reference.
+  - `/clear`: Clear terminal screen and re-render header.
+  - `/status`: Real-time system telemetry and agent session status.
+  - `/model [name]`: Switch AI model on the fly.
+  - `/config [show | set <key> <val>]`: Inspect and modify configurations.
+  - `/history [search]`: Search execution history.
+  - `/commands`: List available agent tools and parameters.
+  - `/files [path]`: View directory structure and files.
+  - `/diff`: Display unified diff of modified files or Git diff.
+  - `/reset`: Clear agent conversation context.
+  - `/language [ru | en]`: Switch interface language between Russian and English.
+  - `/exit`, `/quit`: Exit the agent session.
+- 🔍 **Built-in Linux Diagnostics & Explainer**:
+  - `zhirta system`: View live CPU load %, RAM/Swap, disk usage, GPU, kernel, and desktop session.
+  - `zhirta diagnose`: Hardware, Audio (PipeWire/WirePlumber), Network, GPU, and Systemd diagnostics.
+  - `zhirta explain "<cmd>"`: Detailed explanation of Linux commands and flags.
+  - `zhirta analyze`: Direct UNIX pipeline analyzer (`journalctl -p 3 -xb | zhirta analyze`).
 
 ---
 
@@ -65,7 +94,7 @@ zhir > почему у меня нет звука?
 - **Linux** (CachyOS, Arch Linux, Fedora, Ubuntu, Debian, openSUSE, Alpine, etc.)
 - **Python** 3.11+ (Python 3.12 recommended)
 - `bash` (or `zsh`, `fish`)
-- `uv` (recommended) or `python3-venv`
+- `uv` (recommended) or standard `python3-venv`
 
 ---
 
@@ -85,36 +114,39 @@ Ensure `~/.local/bin` is in your `PATH`:
 export PATH="$HOME/.local/bin:$PATH"
 ```
 
-Now you can run `zhirta` from anywhere!
+Now you can launch `zhirta` from anywhere!
 
 ---
 
 ## ⚙️ Configuration
 
-Settings are stored in `~/.config/zhirterminalassist/config.json` or `.env`.
-
-### CLI Configuration Commands
+Configuration is stored in `~/.config/zhirterminalassist/config.json` or can be configured via CLI:
 
 ```bash
-# View current configuration (API key is automatically masked)
+# View configuration
 zhirta config
 
-# Configure your AI provider (openrouter, openai, local)
+# Set AI provider (openrouter, openai, local)
 zhirta config set provider openrouter
 
 # Set model
 zhirta config set model google/gemini-2.5-flash
+# or Claude:
+zhirta config set model anthropic/claude-3.7-sonnet
 
 # Set API Key
-zhirta config set api-key sk-or-v1-xxxxxxxxxxxxxxxx
+zhirta config set api_key sk-or-v1-xxxxxxxxxxxxxxxx
 
-# Set custom API base URL (e.g. for Ollama)
-zhirta config set api-url http://localhost:11434/v1
+# Set default interface language (ru / en)
+zhirta config set language ru
+
+# Enable auto-execution for safe read-only commands without confirmation
+zhirta config set auto_execute_safe true
 ```
 
 ### Environment Variables (`.env`)
 
-You can also place a `.env` in your project folder or `~/.config/zhirterminalassist/.env`:
+You can also specify settings in `.env` or `~/.config/zhirterminalassist/.env`:
 
 ```env
 AI_PROVIDER=openrouter
@@ -127,151 +159,43 @@ AI_MAX_TOKENS=2048
 
 ---
 
-## 🤖 Supported AI Providers
+## 💻 CLI Usage
 
-| Provider | Base URL | Default Model | API Key |
-| :--- | :--- | :--- | :--- |
-| **OpenRouter** | `https://openrouter.ai/api/v1` | `google/gemini-2.5-flash` | Required |
-| **OpenAI / Custom** | `https://api.openai.com/v1` | `gpt-4o-mini` | Required |
-| **Local (Ollama)** | `http://localhost:11434/v1` | `qwen2.5:latest` | Not needed |
-
----
-
-## 💻 CLI Usage & Examples
-
-### 1. Interactive REPL Mode
+### 1. Interactive Agent REPL
 ```bash
 zhirta
 ```
+
+Inside the session:
 ```text
-[zhir] > почему не работает звук?
-
-  🔍 Анализирую запрос и состояние системы...
-
-  Проблема может быть связана с WirePlumber или отсутствием дефолтного аудио-выхода.
-  
-  Рекомендую проверить состояние сервисов:
-  ```bash
-  systemctl --user restart wireplumber
-  ```
-
-$ systemctl --user restart wireplumber
-Execute? [y/N]: y
-Running...
-✓ Command completed successfully
+zhir ❯ найди ошибку в тестах и исправь её
+zhir ❯ покажи свободное место на диске и почисти кэш pacman
+zhir ❯ /diff
+zhir ❯ /model anthropic/claude-3.7-sonnet
+zhir ❯ /language ru
+zhir ❯ /status
+zhir ❯ /exit
 ```
 
-### 2. Single-shot Queries
+### 2. Direct Task Execution (One-Shot)
 ```bash
-zhirta "почему у меня высокий load average?"
+zhirta "проверь состояние WirePlumber и перезапусти если он упал"
 zhirta "покажи самые прожорливые процессы по RAM"
-zhirta "как обновить систему на Arch Linux"
 ```
 
-### 3. System Telemetry
+### 3. Linux Diagnostics & System Info
 ```bash
 zhirta system
-```
-```text
-SYSTEM
-
-OS        CachyOS
-Kernel    7.1.8-1-cachyos (x86_64)
-CPU       AMD Ryzen 3 4300G with Radeon Graphics
-GPU       AMD Radeon Graphics
-RAM       12.3 / 30.7 GB
-Disk      92.4 / 116.3 GB
-Shell     bash
-DE        KDE
-Session   wayland
-
-CPU usage     5.0%
-Memory        12.3 / 30.7 GB (40.2%)
-Disk          92.4 / 116.3 GB (80.2%)
-Uptime        1h 50m
-```
-
-### 4. System Diagnostics
-```bash
-# Run all checks
 zhirta diagnose
-
-# Check specific categories
-zhirta diagnose audio
-zhirta diagnose network
-zhirta diagnose gpu
-zhirta diagnose systemd
-
-# Ask AI to analyze diagnostics and propose remediation
-zhirta diagnose --ai
-```
-
-### 5. Command Breakdown & Risk Analysis
-```bash
+zhirta diagnose audio --ai
 zhirta explain "sudo pacman -Syu"
 ```
-```text
-COMMAND
-  sudo pacman -Syu
 
-BREAKDOWN
-sudo
-  Run command with elevated superuser privileges.
-pacman
-  Arch Linux package manager.
--S
-  Synchronize/install packages from remote repositories
--y
-  Refresh package databases against servers
--u
-  Upgrade all out-of-date packages on the system
-
-RISK
-  Medium
-```
-
-### 6. Pipeline & Log Stream Analysis
+### 4. Unix Pipeline Analysis
 ```bash
-# Analyze recent systemd errors
-zhirta logs
-
-# Pipe command outputs directly to AI
 journalctl -p 3 -xb | zhirta analyze
 dmesg | zhirta analyze
-cat error.log | zhirta analyze
-```
-
-### 7. Execution History
-```bash
-zhirta history
-```
-
----
-
-## 🛡️ Security Architecture
-
-1. **Catastrophic Commands (`BLOCKED`)**:
-   - Commands that destroy the operating system or root partitions (`rm -rf /`, `rm -rf ~`, fork bombs, raw block writes to `/dev/sda`) are **hard-blocked**.
-2. **Dangerous Commands (`DANGEROUS`)**:
-   - `rm`, `mkfs`, `dd`, `chmod -R`, `pacman -R`, `curl ... | sh` are flagged with `⚠ DANGEROUS COMMAND` and require explicit confirmation.
-3. **Interactive Confirmation**:
-   - No command proposed by AI is executed without the user explicitly pressing `y` or `yes`.
-
----
-
-## ⌨️ Shell Tab Completion
-
-Generate and enable completions:
-
-```bash
-# Bash
-zhirta completion bash > ~/.local/share/bash-completion/completions/zhirta
-
-# Zsh
-zhirta completion zsh > ~/.zsh/completion/_zhirta
-
-# Fish
-zhirta completion fish > ~/.config/fish/completions/zhirta.fish
+cat /var/log/pacman.log | zhirta analyze
 ```
 
 ---
@@ -286,7 +210,7 @@ uv venv --python 3.12
 source .venv/bin/activate
 uv pip install -e ".[dev]" pytest
 
-# Run automated tests
+# Run the 26 automated unit tests
 pytest -v tests/
 ```
 
