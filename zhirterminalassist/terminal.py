@@ -2,11 +2,16 @@ import os
 import sys
 from pathlib import Path
 from typing import List, Optional
-from prompt_toolkit import PromptSession
-from prompt_toolkit.auto_suggest import AutoSuggestFromHistory
-from prompt_toolkit.formatted_text import HTML
-from prompt_toolkit.history import FileHistory
-from prompt_toolkit.styles import Style
+try:
+    from prompt_toolkit import PromptSession
+    from prompt_toolkit.auto_suggest import AutoSuggestFromHistory
+    from prompt_toolkit.formatted_text import HTML
+    from prompt_toolkit.history import FileHistory
+    from prompt_toolkit.styles import Style
+    HAS_PROMPT_TOOLKIT = True
+except ImportError:
+    HAS_PROMPT_TOOLKIT = False
+
 from rich.console import Console
 from rich.markdown import Markdown
 from rich.panel import Panel
@@ -18,11 +23,6 @@ from zhirterminalassist.i18n import get_language, set_language, t
 from zhirterminalassist.system import get_system_info
 
 console = Console()
-
-PROMPT_STYLE = Style.from_dict({
-    "prompt": "#00d7ff bold",
-    "arrow": "#00afff bold",
-})
 
 def print_agent_banner(working_dir: str):
     cfg = get_config()
@@ -46,22 +46,34 @@ class TerminalUI:
     def __init__(self, agent_session: AgentSession):
         self.agent = agent_session
         self.config = get_config()
+        self.prompt_session = None
         
-        # Ensure data dir exists for prompt history
-        history_file = DATA_DIR / "agent_prompt_history.txt"
-        self.prompt_session = PromptSession(
-            history=FileHistory(str(history_file)),
-            auto_suggest=AutoSuggestFromHistory(),
-            enable_history_search=True
-        )
+        if HAS_PROMPT_TOOLKIT:
+            history_file = DATA_DIR / "agent_prompt_history.txt"
+            self.prompt_session = PromptSession(
+                history=FileHistory(str(history_file)),
+                auto_suggest=AutoSuggestFromHistory(),
+                enable_history_search=True
+            )
+        else:
+            try:
+                import readline
+                history_file = DATA_DIR / "agent_readline_history.txt"
+                if history_file.exists():
+                    readline.read_history_file(str(history_file))
+            except Exception:
+                pass
 
     def run(self):
         print_agent_banner(self.agent.working_dir)
 
         while True:
             try:
-                prompt_text = HTML('<style color="#00d7ff" bold="true">zhir </style><style color="#00afff" bold="true">❯ </style>')
-                user_input = self.prompt_session.prompt(prompt_text).strip()
+                if self.prompt_session is not None:
+                    prompt_text = HTML('<style color="#00d7ff" bold="true">zhir </style><style color="#00afff" bold="true">❯ </style>')
+                    user_input = self.prompt_session.prompt(prompt_text).strip()
+                else:
+                    user_input = input(f"{t('prompt_symbol')}").strip()
             except KeyboardInterrupt:
                 console.print(f"\n[yellow]{t('cancelled')}[/yellow]")
                 continue
