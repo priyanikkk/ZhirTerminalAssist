@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "zhirterminalassist"
+version = "1.0.0"
+description = "Intelligent AI Assistant for Linux Terminal and Desktop"
+readme = "README.md"
+authors = [{ name = "priyanikkk" }]
+license = { text = "MIT" }
+requires-python = ">=3.11"
+dependencies = [
+    "PySide6>=6.6.0",
+    "psutil>=5.9.0",
+    "httpx>=0.25.0",
+    "python-dotenv>=1.0.0",
+    "rich>=13.0.0",
+    "pygments>=2.16.0"
+]
+
+[project.scripts]
+zhirta = "zhirterminalassist.cli:main"
+zhirterminalassist = "zhirterminalassist.__main__:main"
+
+[tool.setuptools.packages.find]
+include = ["zhirterminalassist*"]
